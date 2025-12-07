@@ -165,3 +165,20 @@ Write **8–12 lines** describing how you would implement a Stripe Checkout flow
 3. Share the link.
 
 Good luck.
+
+## Stripe Answer
+- For the application fee, when the user clicks "Pay Fee", I would first create a payment request row linked to the application   table with the status as pending.
+
+- Then the backend calls the Stripe checkout session with the fee amount and includes the 'application_id' and the 'payment_request_id' in the meta data.
+
+- The frontend redirects to the Stripe hosted payment page and Stripe handles card authentication.
+
+- After payment, Stripe sends a webhook request to the backend.
+
+- In the protected '/stripe/webhook' endpoint I would verify the stripe signature and listen for the 'checkout.session.completed' events.
+
+- When received, I would update the 'payment_request' record to "paid" and store Stripe's 'payment_intent_id'.
+
+- I would then update the applications status to "Fee_Paid" and append a timeline entry.
+
+- If payment fails or is cancelled, the 'payment_request' remains pending/failed and no stage transition occurs.
