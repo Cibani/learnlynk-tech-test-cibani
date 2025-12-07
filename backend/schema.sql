@@ -39,14 +39,14 @@ create table if not exists public.applications (
   updated_at timestamptz not null default now()
 );
 
--- TODO: add useful indexes for applications:
--- - by tenant_id, lead_id, stage
+--DONE:
+-- added useful indexes for applications:
+-- by tenant_id, lead_id, stage
 create index if not exists idx_applications_tenant_id on public.applications(tenant_id);
 create index if not exists idx_applications_lead_id on public.applications(lead_id);
 create index if not exists idx_applications_stage on public.applications(stage);
 
 -- Done!!
-
 -- Tasks table
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
@@ -64,10 +64,10 @@ create table if not exists public.tasks (
   check (due_at>=created_at)
 );
 
--- TODO:
--- - add check constraint for type in ('call','email','review')
--- - add constraint that due_at >= created_at
--- - add indexes for tasks due today by tenant_id, due_at, status
+-- DONE:
+-- - added check constraint for type in ('call','email','review')
+-- - added constraint that due_at >= created_at
+-- - added indexes for tasks due today by tenant_id, due_at, status
 create index if not exists idx_tasks_tenant_id on public.tasks(tenant_id);
 create index if not exists idx_tasks_due_at on public.tasks(due_at);
 create index if not exists idx_tasks_status on public.tasks(status);

@@ -3,6 +3,7 @@ import { supabase } from "../../../lib/supabaseClient";
 
 type Task = {
   id: string;
+  title: string | null;
   type: string;
   status: string;
   application_id: string;
@@ -18,22 +19,35 @@ export default function TodayDashboard() {
     setLoading(true);
     setError(null);
 
+    // What has been done:
+    // - Query tasks that are due today and not completed
+    // - date filtering using SQL
+
     try {
-      // TODO:
-      // - Query tasks that are due today and not completed
-      // - Use supabase.from("tasks").select(...)
-      // - You can do date filtering in SQL or client-side
+      const start=new Date();
+      start.setHours(0,0,0,0);
+      const end=new Date();
+      end.setHours(23,59,59,999);
+      const {data, error}=await supabase
+      .from("tasks")
+      .select("id, title, type, status, application_id, due_at")
+      .gte("due_at",start.toISOString())
+      .lte("due_at",end.toISOString())
+      .neq("status", "completed")
+      .order("due_at", {ascending: true});
 
-      // Example:
-      // const { data, error } = await supabase
-      //   .from("tasks")
-      //   .select("*")
-      //   .eq("status", "open");
+      if(error){
+        console.error("Error fetching tasks:",error);
+        setError("Failed to load tasks");
+        setTasks([]);
+        return;
+      }
 
-      setTasks([]);
+      setTasks((data || []) as Task[]);
     } catch (err: any) {
       console.error(err);
       setError("Failed to load tasks");
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -41,9 +55,23 @@ export default function TodayDashboard() {
 
   async function markComplete(id: string) {
     try {
-      // TODO:
-      // - Update task.status to 'completed'
+      // DONE:
+      // - Updated task.status to 'completed'
       // - Re-fetch tasks or update state optimistically
+
+      const {error}=await supabase
+      .from("tasks")
+      .update({status:"completed"})
+      .eq("id",id);
+
+      if(error){
+        console.error("Error updating task:", error);
+        alert("Failed to update task");
+        return;
+      }
+
+      //refetch the updated tasks
+      await fetchTasks();
     } catch (err: any) {
       console.error(err);
       alert("Failed to update task");
@@ -66,6 +94,7 @@ export default function TodayDashboard() {
         <table>
           <thead>
             <tr>
+            <th>Title</th>
               <th>Type</th>
               <th>Application</th>
               <th>Due At</th>
@@ -76,6 +105,7 @@ export default function TodayDashboard() {
           <tbody>
             {tasks.map((t) => (
               <tr key={t.id}>
+                <td>{t.title || "(No title)"}</td>
                 <td>{t.type}</td>
                 <td>{t.application_id}</td>
                 <td>{new Date(t.due_at).toLocaleString()}</td>

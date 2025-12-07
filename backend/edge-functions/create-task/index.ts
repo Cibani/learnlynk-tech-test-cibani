@@ -1,8 +1,5 @@
 // LearnLynk Tech Test - Task 3: Edge Function create-task
 
-// Deno + Supabase Edge Functions style
-// Docs reference: https://supabase.com/docs/guides/functions
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -31,9 +28,9 @@ serve(async (req: Request) => {
     const body = (await req.json()) as Partial<CreateTaskPayload>;
     const { application_id, task_type, due_at } = body;
 
-    // TODO: validate application_id, task_type, due_at
-    // - check task_type in VALID_TYPES
-    // - parse due_at and ensure it's in the future
+    // DONE: validated application_id, task_type, due_at
+    // - checked task_type in VALID_TYPES
+    // - parsed due_at and ensure it's in the future
 
     //Basic presence validation
     if(!application_id || !task_type || !due_at){
@@ -94,7 +91,7 @@ serve(async (req: Request) => {
         },
      );
     }
-    // TODO: insert into tasks table using supabase client
+    // DONE: inserted into tasks table using supabase client
     //First, we need to fetch the application to get its tenant_id
     const {data: application, error: applicationError}=await supabase
     .from("applications")
@@ -116,7 +113,7 @@ serve(async (req: Request) => {
       status: "open",
     }).select("id").single();
 
-    // TODO: handle error and return appropriate status code
+    // DONE: handled error and returned appropriate status code
     if(error || !data){
       console.error("Error inserting task: ", error);
       return new Response(
@@ -142,7 +139,7 @@ serve(async (req: Request) => {
     } catch (rtError){
       console.error("Failed to send realtime event: ", rtError);
     }
-    // Example successful response:
+    
     return new Response(
       JSON.stringify({
         success: true, task_id: data.id
